@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id            String       @id @default(cuid())
+  email         String       @unique
+  name          String?
+  height        Float?
+  weight        Float?
+  age           Int?
+  gender        String?
+  bodyGoal      String?      // e.g., "lose weight", "build muscle", "maintain"
+  timeframe     Int?         // in weeks
+  workoutPlans  WorkoutPlan[]
+  diets         Diet[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model WorkoutPlan {
+  id          String     @id @default(cuid())
+  name        String
+  description String?
+  duration    Int        // in weeks
+  difficulty  String     // beginner, intermediate, advanced
+  bodyFocus   String     // comma-separated list of body parts: legs,arms,chest,etc.
+  exercises   Exercise[]
+  user        User       @relation(fields: [userId], references: [id])
+  userId      String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Exercise {
+  id              String     @id @default(cuid())
+  name            String
+  description     String?
+  sets            Int
+  reps            Int
+  restTime        Int        // in seconds
+  videoUrl        String?
+  bodyPart        String
+  workoutPlan     WorkoutPlan @relation(fields: [workoutPlanId], references: [id], onDelete: Cascade)
+  workoutPlanId   String
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+}
+
+model Diet {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  calorieGoal Int?
+  proteinGoal Int?      // in grams
+  carbGoal    Int?      // in grams
+  fatGoal     Int?      // in grams
+  meals       Meal[]
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Meal {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  calories    Int
+  protein     Int       // in grams
+  carbs       Int       // in grams
+  fat         Int       // in grams
+  prepTime    Int       // in minutes
+  recipe      String?
+  diet        Diet      @relation(fields: [dietId], references: [id], onDelete: Cascade)
+  dietId      String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
